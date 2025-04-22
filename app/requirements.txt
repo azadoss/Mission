@@ -1,0 +1,14 @@
+# Gemini client
+git+https://github.com/googleapis/python-genai.git
+
+python-dotenv
+
+# WebSocket server library
+websockets>=11.0,<16.0
+
+# Audio handling
+pydub>=0.25.1,<1.0.0
+
+aiohttp>=3.8.1,<4.0.0
+datetime
+logger
