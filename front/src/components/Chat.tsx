@@ -5,142 +5,145 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Avatar } from "./ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { useWebSocket } from "./WebSocketProvider";
-import AudioPlayer from "./AudioPlayer";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 
-interface Message {
+export interface Message {
   text: string;
   sender: "User" | "Gemini";
-  timestamp: number;
+  timestamp: string;
   isComplete: boolean;
-  type: "text" | "audio";
-  audioData?: string;
+  type: "text";
 }
 
 const Chat: React.FC = () => {
   const [inputText, setInputText] = useState("");
-  const { sendMessage, lastTranscription, lastAudioData } = useWebSocket();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { sendMessage, lastTranscription } = useWebSocket();
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      text: "Screen sharing session started. I'll transcribe what I see.",
+      sender: "Gemini",
+      timestamp: new Date().toLocaleTimeString(),
+      isComplete: true,
+      type: "text",
+    },
+  ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputText(event.target.value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
   };
 
   const handleSendMessage = () => {
-    if (inputText.trim() !== "") {
-      sendMessage({ type: "text", data: { text: inputText } });
-      setInputText("");
-    }
+    const text = inputText.trim();
+    if (!text) return;
+    const now = new Date().toLocaleTimeString();
+    setMessages(prev => [
+      ...prev,
+      { text, sender: "User", timestamp: now, isComplete: true, type: "text" },
+    ]);
+    sendMessage({ type: "text", data: { text } });
+    setInputText("");
   };
 
-  // Handle transcription updates
-  useEffect(() => {
-    if (lastTranscription) {
-      setMessages(prev => {
-        const lastMessage = prev.findLast(m => m.type === 'text'); // Find the last text message
-        
-        // Check if the last text message is from the same sender and is incomplete
-        const shouldUpdateLast = lastMessage && 
-                               lastMessage.sender === lastTranscription.sender &&
-                               !lastMessage.isComplete;
+  const pendingRef = useRef<string>("");
+  const debounceRef = useRef<NodeJS.Timeout>();
 
-        if (shouldUpdateLast) {
-          // Update the last message by appending new text and updating completion status
-          const updatedMessages = prev.map(msg => 
-            msg === lastMessage 
-              ? { ...lastMessage, text: lastMessage.text + lastTranscription.text, isComplete: lastTranscription.finished === true } // Append
-              : msg
-          );
-          return updatedMessages;
-        }
-        
-        // Otherwise, add a new message entry
-        const newMessage = {
-          text: lastTranscription.text,
-          sender: lastTranscription.sender,
-          timestamp: Date.now(),
-          isComplete: lastTranscription.finished === true,
-          type: "text" as const // Explicitly type as "text"
+  const commitTranscription = (text: string, isComplete: boolean) => {
+    setMessages(prev => {
+      const lastIndex = prev.length - 1;
+      const lastMsg = prev[lastIndex];
+      const isSame = lastMsg && lastMsg.sender === "Gemini" && lastMsg.type === "text" && !lastMsg.isComplete;
+
+      if (isSame) {
+        const updated = [...prev];
+        updated[lastIndex] = {
+          ...lastMsg,
+          text,
+          isComplete
         };
-        return [...prev, newMessage];
-      });
+        return updated;
+      }
+      return [
+        ...prev,
+        {
+          text,
+          sender: "Gemini",
+          timestamp: new Date().toLocaleTimeString(),
+          isComplete: isComplete,
+          type: "text"
+        }
+      ];
+    });
+  };
+
+  useEffect(() => {
+    if (!lastTranscription) return;
+    pendingRef.current += lastTranscription.text;
+
+    if (lastTranscription.finished) {
+      commitTranscription(pendingRef.current, true);
+      pendingRef.current = "";
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    } else {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        commitTranscription(pendingRef.current, false);
+      }, 200);
     }
   }, [lastTranscription]);
-
-  // Handle audio data
-  useEffect(() => {
-    if (lastAudioData) {
-      setMessages(prev => [...prev, {
-        text: "",
-        sender: "Gemini",
-        timestamp: Date.now(),
-        isComplete: true,
-        type: "audio",
-        audioData: lastAudioData
-      }]);
-    }
-  }, [lastAudioData]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 p-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.sender === "Gemini"
-                ? "justify-start"
-                : "justify-end"
-            } items-start space-x-2`}
-          >
-            {message.sender === "Gemini" && (
-              <Avatar>
-                <AvatarImage src="/placeholder-avatar.jpg" />
-              </Avatar>
-            )}
-            <div
-              className={`p-3 rounded-lg max-w-[70%] ${
-                message.sender === "Gemini"
-                  ? "bg-gray-100 text-gray-800"
-                  : "bg-blue-500 text-white"
-              }`}
-            >
-              {message.type === "text" && (
-                <>
-                  <p>{message.text}</p>
-                  {!message.isComplete && (
-                    <span className="text-xs text-gray-500">(typing...)</span>
+    <Card className="w-full lg:w-1/2">
+      <CardHeader>
+        <CardTitle>Chat</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="pr-2">
+          <div className="space-y-4">
+            {messages.map((message, index) => (
+              message.text.trim() && (
+                <div key={index} className="flex items-start space-x-4 rounded-lg p-4 bg-muted/50">
+                  {message.sender === "Gemini" && (
+                    <Avatar>
+                      <AvatarImage src="/placeholder-avatar.jpg" />
+                    </Avatar>
                   )}
-                </>
-              )}
-              {message.type === "audio" && message.audioData && (
-                <AudioPlayer base64Audio={message.audioData} />
-              )}
-            </div>
-            {message.sender !== "Gemini" && (
-              <Avatar>
-                <AvatarImage src="/user-avatar.jpg" />
-              </Avatar>
-            )}
+                  <div className={`p-3 rounded-lg max-w-[70%] ${
+                    message.sender === "Gemini"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground"
+                  }`}>
+                    <p>{message.text}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {message.isComplete ? message.timestamp : "(typing...)"}
+                    </p>
+                  </div>
+                  {message.sender === "User" && (
+                    <Avatar>
+                      <AvatarImage src="/user-avatar.jpg" />
+                    </Avatar>
+                  )}
+                </div>
+              )
+            ))}
+            <div ref={chatEndRef} />
           </div>
-        ))}
-        <div ref={chatEndRef} />
-      </ScrollArea>
-      
+        </ScrollArea>
+      </CardContent>
       <div className="p-4 border-t flex space-x-2">
         <Input
           value={inputText}
           onChange={handleInputChange}
-          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+          onKeyPress={e => e.key === "Enter" && handleSendMessage()}
           placeholder="Type a message..."
         />
         <Button onClick={handleSendMessage}>Send</Button>
       </div>
-    </div>
+    </Card>
   );
 };
 
