@@ -15,9 +15,9 @@ if not GEMINI_API_KEY:
 
 # Model settings
 MODEL = "gemini-2.0-flash-live-001" # Or your chosen Live API model
-VOICE_NAME = "Charon" # Or your preferred voice Puck, Charon, Kore, Fenrir, Aoede, Leda, Orus, and Zephyr.
+VOICE_NAME = "Zephyr" # Or your preferred voice Puck, Charon, Kore, Fenrir, Aoede, Leda, Orus, and Zephyr.
 LANGUAGE_CODE = "en-US" # Or your preferred language code
-SYSTEM_INSTRUCTION = "You are a helpful assistant." # Or your system instruction
+SYSTEM_INSTRUCTION = "You are a helpful voice assistant with camera and screen share tools. Respond clear and concise. Dont ask for additional information just make your best judgement." # Or your system instruction
 
 # Server settings
 HOST = os.getenv("HOST", "0.0.0.0")

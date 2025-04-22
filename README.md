@@ -14,7 +14,7 @@ A durable, secure, and refactored WebSocket server to connect to Google Gemini L
 `PORT=9084`
 
 2. Install dependencies: `pip install -r requirements.txt`.
-3. Run server: `python -m main.py`.
+3. Run server: `python -m main`.
 
 ## Frontend 
 1. $ cd front
