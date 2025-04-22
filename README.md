@@ -8,7 +8,11 @@ A durable, secure, and refactored WebSocket server to connect to Google Gemini L
 - Robust error handling and logging
 
 ## Setup
-1. Create `.env` with `GEMINI_API_KEY`.
+1. Create `.env` with 
+`GEMINI_API_KEY`
+`HOST=0.0.0.0`
+`PORT=9084`
+
 2. Install dependencies: `pip install -r requirements.txt`.
 3. Run server: `python -m main.py`.
 
