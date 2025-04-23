@@ -16,18 +16,21 @@ async def handle_websocket_connection(websocket):
     """Handle a WebSocket connection from a client."""
     print(f"Client connected: {websocket.remote_address}")
     
-    # Load the session handle
-    session_handle = load_session_handle()
-    
     try:
+        # Load the session handle
+        session_handle = load_session_handle()
+
         # Receive initial configuration from client
         config_message = await websocket.recv()
         config_data = json.loads(config_message)
         print(f"Received client configuration")
+
         
         # Try to connect with existing session or create new one
         await connect_to_gemini(websocket, session_handle)
-        
+
+    except websockets.ConnectionClosed:
+        print("Client disconnected")    
     except websockets.exceptions.ConnectionClosedOK:
         print("Client disconnected normally")
     except websockets.exceptions.ConnectionClosedError as e:
@@ -39,7 +42,7 @@ async def handle_websocket_connection(websocket):
         except:
             pass
     finally:
-        print(f"Client disconnected: {websocket.remote_address}")
+        print(f"Connection closed: {websocket.remote_address}")
 
 async def connect_to_gemini(websocket, session_handle=None):
     """Connect to Gemini API with an optional session handle."""
@@ -83,35 +86,22 @@ async def start_gemini_session(websocket, session_handle):
         send_task = asyncio.create_task(send_to_gemini(websocket, session))
         receive_task = asyncio.create_task(receive_from_gemini(websocket, session))
         
-        # Use done_callback to properly handle task completion
-        tasks_completed = asyncio.Event()
-        
-        def on_task_done(task):
-            try:
-                task.result()  # Will raise exception if task failed
-            except Exception as e:
-                print(f"Task failed with error: {e}")
-            finally:
-                # Set the event when any task completes
-                tasks_completed.set()
-        
-        send_task.add_done_callback(on_task_done)
-        receive_task.add_done_callback(on_task_done)
-        
-        # Wait for any task to complete
-        await tasks_completed.wait()
-        
-        # Cancel the other task if it's still running
-        if not send_task.done():
-            send_task.cancel()
-        if not receive_task.done():
-            receive_task.cancel()
-            
-        # Wait for canceled tasks to finish
         try:
-            await asyncio.gather(send_task, receive_task, return_exceptions=True)
+            done, pending = await asyncio.wait(
+                [send_task, receive_task],
+                return_when=asyncio.FIRST_COMPLETED
+            )
+            
+            for task in pending:
+                task.cancel()
+                
+            await asyncio.gather(*pending, return_exceptions=True)
+            
         except asyncio.CancelledError:
-            pass
+            # Handle explicit cancellation
+            send_task.cancel()
+            receive_task.cancel()
+            await asyncio.gather(send_task, receive_task, return_exceptions=True)
 
 async def send_to_gemini(websocket, session):
     """Send data from WebSocket client to Gemini."""
@@ -120,7 +110,20 @@ async def send_to_gemini(websocket, session):
             try:
                 data = json.loads(message)
                 
-                # Handle real-time audio/image input
+                # Handle start/stop commands FIRST
+                if "action" in data:
+                    if data["action"] == "start_sharing":
+                        print("Screen sharing started")
+                        # Close session first
+                        await session.close()
+                        # Then break out of the loop
+                        break
+                    elif data["action"] == "stop_sharing":
+                        print("Screen sharing stopped")
+                        await session.close()
+                        return
+                
+                # Then handle media/text as before
                 if "realtime_input" in data:
                     for chunk in data["realtime_input"]["media_chunks"]:
                         await session.send(input={
@@ -141,6 +144,8 @@ async def send_to_gemini(websocket, session):
                 print(f"Error sending to Gemini: {e}")
     except websockets.exceptions.ConnectionClosedOK:
         print("Client disconnected while sending")
+    except asyncio.CancelledError:
+        print("Send task cancelled")
     except Exception as e:
         print(f"Error in send_to_gemini: {e}")
     finally:
@@ -229,7 +234,7 @@ async def receive_from_gemini(websocket, session):
                 
             except asyncio.CancelledError:
                 print("Receive task was cancelled")
-                keep_receiving = False
+                #keep_receiving = False
             except Exception as e:
                 print(f"Error in receive loop: {e}")
                 # Don't exit the loop for errors that might be temporary
@@ -250,8 +255,8 @@ async def start_server(host, port):
         port=port,
         origins=None,  # Allow all origins
         compression=None,  # Disable compression to avoid deprecation warning
-        # ping_interval=30,  # Send ping frames every 30 seconds
-        # ping_timeout=10    # Wait 10 seconds for pong response
+        ping_interval=30,  # Send ping frames every 30 seconds
+        ping_timeout=10    # Wait 10 seconds for pong response
     )
     
     print(f"WebSocket server running on {host}:{port}")

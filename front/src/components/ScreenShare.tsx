@@ -64,6 +64,10 @@ const ScreenShare: React.FC = () => {
   };
 
   const stopSharing = () => {
+    // Cleanup first
+    if (captureIntervalRef.current) clearInterval(captureIntervalRef.current);
+    if (audioWorkletNodeRef.current) audioWorkletNodeRef.current.disconnect();
+
     // Add session start command
     sendMessage({ action: "stop_sharing" });
 

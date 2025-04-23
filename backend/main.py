@@ -9,9 +9,10 @@ async def main():
     
     # Keep running until interrupted
     try:
-        await asyncio.Future()  # Run forever
+        while True:
+            await asyncio.sleep(1)
     except KeyboardInterrupt:
-        print("Server stopping...")
+        print("\nServer stopping...")
     finally:
         server.close()
         await server.wait_closed()
