@@ -19,6 +19,9 @@ const ScreenShare: React.FC = () => {
   const startSharing = async () => {
     if (isSharing) return;
     try {
+      // Add session start command
+      sendMessage({ action: "start_sharing" });
+
       const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1, sampleRate: 16000 } });
 
@@ -52,7 +55,7 @@ const ScreenShare: React.FC = () => {
         }, 3000);
       }
 
-      sendMessage({ setup: {} });
+      // sendMessage({ setup: {} });
       setIsSharing(true);
     } catch (err) {
       console.error("startSharing error", err);
@@ -61,6 +64,9 @@ const ScreenShare: React.FC = () => {
   };
 
   const stopSharing = () => {
+    // Add session start command
+    sendMessage({ action: "stop_sharing" });
+
     if (videoRef.current?.srcObject) {
       (videoRef.current.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
       videoRef.current.srcObject = null;
@@ -96,7 +102,7 @@ const ScreenShare: React.FC = () => {
             {isSharing && <Progress value={Math.max(audioLevel, playbackAudioLevel)} className="h-1 sm:h-2 bg-white" indicatorClassName="bg-black" />}
             <div className="flex flex-col gap-2 w-full">
               {!isSharing ? (
-                <Button size="lg" onClick={() => void startSharing()} disabled={!isConnected} variant={isConnected ? "default" : "outline"} className={`w-full ${!isConnected ? "border-red-300 text-red-700" : ""}`}>
+                <Button size="lg" onClick={startSharing} disabled={!isConnected} variant={isConnected ? "default" : "outline"} className={`w-full ${!isConnected ? "border-red-300 text-red-700" : ""}`}>
                   {isConnected ? "Start Screen Share" : "Connecting..."}
                 </Button>
               ) : (

@@ -1,42 +1,38 @@
-# My Screen Share App
+# Multimodal realtime client with Screen Share Assistant
 
-This is a simple React application that allows users to send and receive text and audio messages.
-For the project detail: 
-https://youtu.be/1eybCQYOJnY
+A React-based web application that allows users to share their screen and audio with an AI assistant. The assistant provides real-time transcription and responses based on the shared content.
 
-## Getting Started
+## Features
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+- Screen sharing with audio capture
+- Real-time audio level visualization
+- WebSocket-based communication
+- Chat interface with message history
+- Responsive design
 
-### Prerequisites
-
-You need to have Node.js and npm installed on your machine.
-
-### Installing
-
-1. Download this code package.
-
-2. Navigate to the project directory:
-
-```bash
-cd my-screen-share-app
-```
-
-3. Install the project dependencies:
-
+2. Install dependencies
 ```bash
 npm install
+# or
+yarn install
 ```
 
-### Running the Application
+3. Set up the websocket server url
+Open the App.tsx
+find the line:
+```
+ <WebSocketProvider url="ws://your-websocket-server-url">
+```
+Replace the websocket server url of your own.
 
-To start the application, run the following command:
-
+4. Run the development server
 ```bash
 npm run dev
+# or
+yarn dev
 ```
 
-The application will start in development mode and open in your default web browser.
+Open [http://localhost:5173](http://localhost:5173) with your browser to see the application.
 
 ## Built With
 
