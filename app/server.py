@@ -30,8 +30,10 @@ async def handle_websocket_connection(websocket):
         
     except websockets.exceptions.ConnectionClosedOK:
         print("Client disconnected normally")
+    except websockets.exceptions.ConnectionClosedError as e:
+        print(f"Client connection closed unexpectedly: {e}")
     except Exception as e:
-        print(f"Error in WebSocket connection: {e}")
+        print(f"[{datetime.datetime.now()}] Error in WebSocket connection: {e}")
         try:
             await websocket.send(json.dumps({"error": str(e)}))
         except:
@@ -47,6 +49,8 @@ async def connect_to_gemini(websocket, session_handle=None):
     except Exception as e:
         if session_handle and ("session not found" in str(e).lower() or "policy violation" in str(e).lower()):
             print(f"Session error: {e}, retrying with new session")
+            # Clear invalid session handle from storage
+            save_session_handle(None)  # Add this line
             # If the session is invalid, try again with a new session
             await start_gemini_session(websocket, None)
         else:
@@ -246,8 +250,8 @@ async def start_server(host, port):
         port=port,
         origins=None,  # Allow all origins
         compression=None,  # Disable compression to avoid deprecation warning
-        ping_interval=30,  # Send ping frames every 30 seconds
-        ping_timeout=10    # Wait 10 seconds for pong response
+        # ping_interval=30,  # Send ping frames every 30 seconds
+        # ping_timeout=10    # Wait 10 seconds for pong response
     )
     
     print(f"WebSocket server running on {host}:{port}")

@@ -28,9 +28,9 @@ const ScreenShare: React.FC = () => {
       const source = ctx.createMediaStreamSource(audioStream);
       audioWorkletNodeRef.current = new AudioWorkletNode(ctx, "audio-processor", { processorOptions: { sampleRate: 16000, bufferSize: 4096 } });
       audioWorkletNodeRef.current.port.onmessage = ({ data: { pcmData, level } }) => {
-        setAudioLevel(level);
+        setAudioLevel(level as number);
         if (pcmData) {
-          const b64 = Base64.fromUint8Array(new Uint8Array(pcmData));
+          const b64 = Base64.fromUint8Array(new Uint8Array(pcmData as ArrayBuffer));
           sendMediaChunk({ mime_type: "audio/pcm", data: b64 });
         }
       };
@@ -71,34 +71,40 @@ const ScreenShare: React.FC = () => {
     }
     if (captureIntervalRef.current) clearInterval(captureIntervalRef.current);
     if (audioWorkletNodeRef.current) audioWorkletNodeRef.current.disconnect();
-    if (audioContextRef.current) audioContextRef.current.close();
+    if (audioContextRef.current) {
+      void audioContextRef.current.close();
+    }
     setIsSharing(false);
     setAudioLevel(0);
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 max-w-6xl">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6 max-w-5xl">
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Gemini Learning Assistant with Memory</h1>
-        <p className="text-xl text-muted-foreground">Share your screen and talk to me</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4 sm:mb-8">Gemini Learning Assistant with Memory</h1>
+        <p className="text-base sm:text-lg text-muted-foreground">Share your screen and talk to me</p>
       </div>
-      <div className="flex flex-col lg:flex-row gap-6 justify-center items-start h-[600px]">
-        <Card className="w-full lg:w-1/2">
+      <div className="flex flex-col lg:flex-row gap-6 justify-center items-start h-full min-h-[400px] sm:min-h-[600px]">
+        <Card className="w-full lg:w-1/2 overflow-hidden">
           <CardHeader>
-            <CardTitle>Screen Preview</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Screen Preview</CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-video rounded-md border bg-muted" />
-            {isSharing && <Progress value={Math.max(audioLevel, playbackAudioLevel)} className="h-1 bg-white" indicatorClassName="bg-black" />}
-            {!isSharing ? (
-              <Button size="lg" onClick={startSharing} disabled={!isConnected} variant={isConnected ? "default" : "outline"} className={`w-full ${!isConnected ? "border-red-300 text-red-700" : ""}`}>
-                {isConnected ? "Start Screen Share" : "Connecting..."}
-              </Button>
-            ) : (
-              <Button size="lg" variant="destructive" onClick={stopSharing} className="w-full">
-                Stop Sharing
-              </Button>
-            )}
+          <CardContent className="p-4 sm:p-6 space-y-4">
+            <div className="relative w-full aspect-video">
+              <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover rounded-md border bg-muted" />
+            </div>
+            {isSharing && <Progress value={Math.max(audioLevel, playbackAudioLevel)} className="h-1 sm:h-2 bg-white" indicatorClassName="bg-black" />}
+            <div className="flex flex-col gap-2 w-full">
+              {!isSharing ? (
+                <Button size="lg" onClick={() => void startSharing()} disabled={!isConnected} variant={isConnected ? "default" : "outline"} className={`w-full ${!isConnected ? "border-red-300 text-red-700" : ""}`}>
+                  {isConnected ? "Start Screen Share" : "Connecting..."}
+                </Button>
+              ) : (
+                <Button size="lg" variant="destructive" onClick={stopSharing} className="w-full">
+                  Stop Sharing
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
 

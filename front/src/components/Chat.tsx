@@ -37,10 +37,7 @@ const Chat: React.FC = () => {
     const text = inputText.trim();
     if (!text) return;
     const now = new Date().toLocaleTimeString();
-    setMessages(prev => [
-      ...prev,
-      { text, sender: "User", timestamp: now, isComplete: true, type: "text" },
-    ]);
+    setMessages((prev) => [...prev, { text, sender: "User", timestamp: now, isComplete: true, type: "text" }]);
     sendMessage({ type: "text", data: { text } });
     setInputText("");
   };
@@ -49,7 +46,7 @@ const Chat: React.FC = () => {
   const debounceRef = useRef<NodeJS.Timeout>();
 
   const commitTranscription = (text: string, isComplete: boolean) => {
-    setMessages(prev => {
+    setMessages((prev) => {
       const lastIndex = prev.length - 1;
       const lastMsg = prev[lastIndex];
       const isSame = lastMsg && lastMsg.sender === "Gemini" && lastMsg.type === "text" && !lastMsg.isComplete;
@@ -59,7 +56,7 @@ const Chat: React.FC = () => {
         updated[lastIndex] = {
           ...lastMsg,
           text,
-          isComplete
+          isComplete,
         };
         return updated;
       }
@@ -70,8 +67,8 @@ const Chat: React.FC = () => {
           sender: "Gemini",
           timestamp: new Date().toLocaleTimeString(),
           isComplete: isComplete,
-          type: "text"
-        }
+          type: "text",
+        },
       ];
     });
   };
@@ -97,50 +94,35 @@ const Chat: React.FC = () => {
   }, [messages]);
 
   return (
-    <Card className="w-full lg:w-1/2">
+    <Card className="w-full lg:w-1/2 h-[80vh] sm:h-[600px] overflow-hidden flex flex-col">
       <CardHeader>
         <CardTitle>Chat</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="pr-2">
-          <div className="space-y-4">
-            {messages.map((message, index) => (
-              message.text.trim() && (
-                <div key={index} className="flex items-start space-x-4 rounded-lg p-4 bg-muted/50">
-                  {message.sender === "Gemini" && (
-                    <Avatar>
-                      <AvatarImage src="/placeholder-avatar.jpg" />
-                    </Avatar>
-                  )}
-                  <div className={`p-3 rounded-lg max-w-[70%] ${
-                    message.sender === "Gemini"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
-                  }`}>
+      <CardContent className="p-0 h-full flex flex-col">
+        <ScrollArea className="flex-1 px-4 pt-4 h-full">
+          <div className="space-y-4 pb-10">
+            {messages
+              .filter((msg) => msg.text.trim())
+              .map((message, index) => (
+                <div key={index} className={`flex ${message.sender === "Gemini" ? "flex-row" : "flex-row-reverse"} items-start space-x-4 rounded-lg`}>
+                  {/* Avatar */}
+                  <Avatar className="m-3">
+                    <AvatarImage src={message.sender === "Gemini" ? "/ai-avatar.png" : "/placeholder-avatar.jpg"} />
+                  </Avatar>
+
+                  {/* Message Content */}
+                  <div className={`rounded-lg max-w-[70%] ${message.sender === "Gemini" ? "bg-muted/50 text-left" : "bg-primary text-primary text-right p-3"}`}>
                     <p>{message.text}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {message.isComplete ? message.timestamp : "(typing...)"}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{message.isComplete ? message.timestamp : "(typing...)"}</p>
                   </div>
-                  {message.sender === "User" && (
-                    <Avatar>
-                      <AvatarImage src="/user-avatar.jpg" />
-                    </Avatar>
-                  )}
                 </div>
-              )
-            ))}
+              ))}
             <div ref={chatEndRef} />
           </div>
         </ScrollArea>
       </CardContent>
       <div className="p-4 border-t flex space-x-2">
-        <Input
-          value={inputText}
-          onChange={handleInputChange}
-          onKeyPress={e => e.key === "Enter" && handleSendMessage()}
-          placeholder="Type a message..."
-        />
+        <Input value={inputText} onChange={handleInputChange} onKeyPress={(e) => e.key === "Enter" && handleSendMessage()} placeholder="Type a message..." />
         <Button onClick={handleSendMessage}>Send</Button>
       </div>
     </Card>
