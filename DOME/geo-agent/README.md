@@ -34,9 +34,13 @@ zoom in seoul,  add marker to center of it and draw circle with 5km.
 - **JavaScript Runtime** (for local testing)
 
 ### Steps
-1. **Clone the Repository**
+1. **Download the Repository**
+   
+   Go to https://download-directory.github.io
+   And Paste repository url https://github.com/azadoss/Mission/tree/main/DOME/geo-agent 
+   Download zip file 
+   
    ```sh
-   Download directory https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fazadoss%2FMission%2Ftree%2Fmain%2FDOME%2Fgeo-agent
    cd geo-map-ai-agent
    ```
 
