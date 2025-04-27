@@ -2,11 +2,12 @@
 
 ## 📌 Overview
 
-Geo agentiniñ baqılaw taqtasınıñ mısalı kodı - bul aşıq bastapqı LLM (Gemma, LLaMA jäne t. Ol naqtı waqıttağı geokeñistiktik derekterdi vïzwalïzacïyalawdı jäne ïnfraqurılımdı baqılaw üşin AI basqaratın tüsinikterdi usınadı. Jüye kartağa negizdelgen analïtïkası bar ïntwïtïvti baqılaw taqtasın usınatın Django, Leaflet.js jäne LLM API arqılı qurastırılğan. Bul jobanıñ maqsatı LLM paydalanw jäne onı kartamen öñdewge qoldanw jolın körsetw. Bul oñay tüsinw üşin jıldam ülgisi men algorïtmi bar qarapayım mexanïzmge ïe. Onı tüsingennen keyin önimdilikti jaqsartwğa boladı.
+Geo agentiniñ baqılaw taqtasınıñ mısalı kodı - bul aşıq bastapqı LLM (Gemma, LLaMA jäne t. Ol naqtı waqıttağı geokeñistiktik derekterdi vïzwalïzacïyalawdı jäne ïnfraqurılımdı baqılaw üşin AI basqaratın tüsinikterdi usınadı. Jüye kartağa negizdelgen analïtïkası bar ïntwïtïvti baqılaw taqtasın usınatın Django, Leaflet.js jäne LLM API arqılı qurastırılğan.
 
 ---
 
-Geo Agent Dashboard is **interactive mapping solution** powered by **Open-source LLMs (Gemma, LLaMA, etc.)**. It provides **real-time geospatial data visualization** and **AI-driven insights** for infrastructure monitoring. The system is built using **Django**, **Leaflet.js**, and **LLM APIs**, offering an intuitive dashboard with **map-based analytics**. This project has the purpose of demonstration how to use LLM and apply it to map handling. This has simple mechanism with prompt template and algorithm to understand it easily. You can improve the performance after understanding it. 
+Geo Agent Dashboard is **interactive mapping solution** powered by **Open-source LLMs (Gemma, LLaMA, etc.)**. It provides **real-time geospatial data visualization** and **AI-driven insights** for infrastructure monitoring.</br>
+The system is built using **Django**, **Leaflet.js**, **Langchain** and **LLM APIs**, offering an intuitive dashboard with **map-based analytics**. 
 </br><img src="https://github.com/mac999/geo-llm-agent-dashboard/blob/main/doc/geo_llm_demo.gif" width=800 /></br>
 
 ## ✨ Features
@@ -16,13 +17,13 @@ Geo Agent Dashboard is **interactive mapping solution** powered by **Open-source
 
 #### Prompt example
    ```sh
-zoom in tokyo and draw circle with 10 km, red color.
+zoom in Almaty and draw circle with 10 km, red color.
 zoom out
 zoom out, 2 times. 
-Zoom in newyork and draw circle with 20 km. blue color.
+Zoom in london and draw circle with 20 km. blue color.
 zoom out, 3 times. 
-add marker to center of newyork.
-zoom in seoul,  add marker to center of it and draw circle with 5km. 
+add marker to center of london.
+zoom in zuri, add marker to center of it and draw circle with 1km. 
    ```
 
 ## 🚀 Installation
@@ -39,9 +40,9 @@ zoom in seoul,  add marker to center of it and draw circle with 5km.
    Go to https://download-directory.github.io
    And Paste repository url https://github.com/azadoss/Mission/tree/main/DOME/geo-agent 
    Download zip file 
-   
+
    ```sh
-   cd geo-map-ai-agent
+   cd geo-agent
    ```
 
 2. **Create Virtual Environment & Install Dependencies**
@@ -66,7 +67,7 @@ zoom in seoul,  add marker to center of it and draw circle with 5km.
 
 ## 📂 Project Structure
 ```
-geo-llm-agent-dashboard/
+geo-agent/
 │── charts/static/                    # CSS, JavaScript, images
 │── charts/templates/index.html       # Main UI file
 │── dashbaord                         # asgi, settings
