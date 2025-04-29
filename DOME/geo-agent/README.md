@@ -8,6 +8,7 @@ Geo agentiniñ baqılaw taqtasınıñ mısalı kodı - bul aşıq bastapqı LLM 
 
 Geo Agent Dashboard is **interactive mapping solution** powered by **Open-source LLMs (Gemma, LLaMA, etc.)**. It provides **real-time geospatial data visualization** and **AI-driven insights** for infrastructure monitoring.</br>
 The system is built using **Django**, **Leaflet.js**, **Langchain** and **LLM APIs**, offering an intuitive dashboard with **map-based analytics**. 
+
 </br><img src="https://github.com/mac999/geo-llm-agent-dashboard/blob/main/doc/geo_llm_demo.gif" width=800 /></br>
 
 ## ✨ Features
